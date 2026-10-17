@@ -1,3 +1,4 @@
+import os
 import joblib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,19 +18,27 @@ st.markdown(
 )
 
 
-# Load the trained model safely
+# Load the trained model safely with robust path checking
 @st.cache_resource
 def load_model():
-  # Ensure 'delivery_model.sav' is in the same folder as this script in your GitHub repo
-  return joblib.load('delivery_model.sav')
+  # Get the absolute directory of the current script
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+  model_path = os.path.join(script_dir, 'delivery_model.sav')
+
+  if not os.path.exists(model_path):
+    raise FileNotFoundError(f'Could not find "delivery_model.sav" at: {model_path}')
+
+  return joblib.load(model_path)
 
 
 try:
   model = load_model()
 except Exception as e:
-  st.error(
-      'Error loading model file (`delivery_model.sav`). Please ensure it is'
-      ' uploaded to your repository.'
+  st.error(f'⚠️ **Model Loading Error:** {e}')
+  st.markdown(
+      '**How to fix this:** Make sure `delivery_model.sav` is uploaded'
+      ' **directly into the same folder** as this script in your GitHub'
+      ' repository.'
   )
   st.stop()
 
